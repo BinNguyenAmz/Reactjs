@@ -35,7 +35,7 @@ export default function Header() {
     const chasses = useStyles();
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
+    <Box>
       <AppBar position="static">
         <Toolbar>
         <CodeIcon className={classNames.menuButton}/>

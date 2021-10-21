@@ -41,7 +41,7 @@ export default function Header() {
         <CodeIcon className={classNames.menuButton}/>
 
           <Typography variant="h6" component="div"  sx={{ flexGrow: 1 }}>
-            <NavLink className={chasses.link} to="/"> ReactJS </NavLink>
+            <Link className={chasses.link} to="/"> ReactJS </Link>
           </Typography>
           
           <NavLink className={chasses.link} to="/todos">

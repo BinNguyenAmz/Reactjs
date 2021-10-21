@@ -35,13 +35,13 @@ export default function Header() {
     const chasses = useStyles();
 
   return (
-    <Box>
+    <Box  sx={{ flexGrow: 1 }}>
       <AppBar position="static">
         <Toolbar>
         <CodeIcon className={classNames.menuButton}/>
 
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            <Link className={chasses.link} to="/"> ReactJS </Link>
+          <Typography variant="h6" component="div"  sx={{ flexGrow: 1 }}>
+            <NavLink className={chasses.link} to="/"> ReactJS </NavLink>
           </Typography>
           
           <NavLink className={chasses.link} to="/todos">

@@ -1,16 +1,22 @@
+import { makeStyles } from '@material-ui/core';
+import { AccountCircle, Close } from '@mui/icons-material';
 import CodeIcon from '@mui/icons-material/Code';
+import { IconButton, Menu, MenuItem } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
-import { makeStyles } from '@mui/styles';
+import { unwrapResult } from '@reduxjs/toolkit';
 import classNames from 'classnames';
-import Register from 'features/Auth/Components/Register';
+import LoginForm from 'features/Auth/Components/LoginForm';
+import RegisterForm from 'features/Auth/Components/RegisterForm';
+import { login, logout, register } from 'features/Auth/userSlice';
+import { useSnackbar } from 'notistack';
 import React, { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Link, NavLink } from 'react-router-dom';
 
 const useStyles = makeStyles((theme) => ({
@@ -18,11 +24,31 @@ const useStyles = makeStyles((theme) => ({
         color: "#fff",
         textDecoration: "none",
     },
+    closeButton: {
+      position: 'absolute !important',
+      top: theme.spacing(1),
+      right: theme.spacing(1),
+      color: theme.palette.grey[500],
+      // right: theme.spacing(1),
+      marginLeft: theme.spacing(35),
+      xIndex: 1,
+    }
 }));
+
+const MODE = {
+  LOGIN: 'login',
+  REGISTER: 'register'
+}
 
 export default function Header() {
 
-    const [open, setOpen] = useState(false);
+  const loggedInUser = useSelector(state => state.user.current);
+  const isLoggedIn = !! loggedInUser.id;
+  const [open, setOpen] = useState(false);
+  const [mode, setMode] = useState(MODE.LOGIN)
+  const [anchorEl, setAnchorEl] = useState(null)
+  const  dispatch = useDispatch();  
+  const { enqueueSnackbar } = useSnackbar();
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -31,6 +57,44 @@ export default function Header() {
   const handleClose = () => {
     setOpen(false);
   };
+
+  const handleUserClick = (e) => {
+    setAnchorEl(e.currentTarget);
+  }
+
+  const onSubmitRegister = async (values) => {
+    try {
+        const action = register(values);
+        const resultAction = await dispatch(action);
+        unwrapResult(resultAction);
+        enqueueSnackbar('Register succesfully', {variant: "success"});
+        setOpen(false );
+      } catch (error) {
+        enqueueSnackbar(error.message, {variant: "error"});
+    }
+  }
+
+  const onSubmitLogin = async (values) => {
+        try {
+            const action = login(values);
+            const resultAction = await dispatch(action);
+            unwrapResult(resultAction);
+            setOpen(false);
+            }
+        catch (error) {
+            enqueueSnackbar(error.message, {variant: "error"});
+        }
+
+  }
+
+  const handleCloseMenu = () => {
+    setAnchorEl(null)
+  }
+
+  const handleLogoutClick = () => {
+    const action = logout();
+    dispatch(action);
+  }
 
     const chasses = useStyles();
 
@@ -41,7 +105,7 @@ export default function Header() {
         <CodeIcon className={classNames.menuButton}/>
 
           <Typography variant="h6" component="div"  sx={{ flexGrow: 1 }}>
-            <Link className={chasses.link} to="/"> ReactJS </Link>
+            <Link className={chasses.link} to="/">Shop Dragons</Link>
           </Typography>
           
           <NavLink className={chasses.link} to="/todos">
@@ -52,17 +116,69 @@ export default function Header() {
             <Button color="inherit">Album</Button>
           </NavLink>
           
-            <Button color="inherit" onClick={handleClickOpen}>Register</Button>
+            {!isLoggedIn &&  (
+              <Button color="inherit" onClick={handleClickOpen} >Login</Button>
+            )}
+            
+            {isLoggedIn && (
+              <IconButton  color="inherit"  onClick={handleUserClick}>
+                <AccountCircle />
+              </IconButton>
+            )}
         </Toolbar>
       </AppBar>
 
-      <Dialog disableEscapeKeyDown onBackdropClick="false" open={open} onClose={handleClose}>
+      <Menu  
+       keepMounted
+       anchorEl = {anchorEl}
+       open = {Boolean(anchorEl)}
+       onClose = {handleCloseMenu}
+       anchorOrigin = {{
+         vertical: 'bottom',
+         horizontal: 'right',
+       }}
+       transformOrigin={{
+         vertical: 'top',
+         horizontal: 'right',
+       }}
+      >
+        <MenuItem onClick={handleCloseMenu}>My Account</MenuItem>
+        <MenuItem onClick={handleLogoutClick}>Logout</MenuItem>
+      </Menu>
+
+      <Dialog disableEscapeKeyDown open={open} onClose={handleClose} onBackdropClick="false">
+
+        <IconButton className={chasses.closeButton} onClick={handleClose}>
+            <Close  />
+        </IconButton> 
+
         <DialogContent>
-          <Register />
+          {mode === MODE.REGISTER && (
+            <>
+            <RegisterForm onSubmit={onSubmitRegister} />
+
+            <Box textAlign="center">
+
+              <Button color="primary" onClick={() => setMode(MODE.LOGIN)}>
+                Already have an acount. Login here
+              </Button>
+            </Box>
+            </>
+          )}
+
+          {mode === MODE.LOGIN && (
+            <>
+            <LoginForm onSubmit={onSubmitLogin} />
+
+            <Box textAlign="center">
+
+              <Button color="primary" onClick={() => setMode(MODE.REGISTER)}>
+                Don't have an acount. Register here
+              </Button>
+            </Box>
+            </>
+          )}
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-        </DialogActions>
       </Dialog>
     </Box>
   );

@@ -37,48 +37,34 @@ const useStyles = makeStyles((theme) => ({
     }
 }));
 
-RegisterForm.propTypes = {
-    onSubmit: PropTypes.func,
+LoginForm.propTypes = {
+    onsubmit: PropTypes.func,
 };
 
-function RegisterForm(props) {
+function LoginForm(props) {
     const classes = useStyles();
 
     const schema = yup.object().shape({
-        fullName: yup
-        .string()
-        .required("Please enter your full name.")
-        .test('should has at least two words', 'Please enter at least two words.', value => {
-            return value.split(' ').length >= 2;
-        }),
-
-        email: yup
+        identifier: yup
         .string()
         .required("Please enter your email")
         .email("Please enter a valid email"),
-
-        password: yup.string().required("Please enter your password").min(6, "Please enter at least 6 charesters."),
-
-        retypePassword: yup.string().required("Please retype password.").oneOf([yup.ref('password')], "password does not match.")
+        password: yup.string().required("Please enter your password"),
     });
-    
 
     const form = useForm({
         defaultValues: {    
-            fullName: '',
-            email: '',
+            identifier: '',
             password: '',
-            retypePassword: '',
         },
         resolver: yupResolver(schema),
     });
 
     const handleSubmit = async (values) => {
         const {onSubmit} = props;
-        const data = {...values};
-        delete data.retypePassword;
-        data.username = values.email;
-        await onSubmit(data);
+        if (onSubmit) {
+            await   onSubmit(values);
+        }
     }
 
     const {isSubmitting} = form.formState;
@@ -94,17 +80,15 @@ function RegisterForm(props) {
             </Avatar>
 
             <Typography component="h3" variant="h5" className={classes.title}>
-                Create An Account 
+            Sign in 
             </Typography>
 
             <form onSubmit={form.handleSubmit(handleSubmit)}>
-                <InputField name="fullName" label="Full Name" form={form}/>
-                <InputField name="email" label="Email" form={form}/>
+                <InputField name="identifier" label="Email" form={form}/>
                 <PasswordField name="password" label="Password" form={form}/>
-                <PasswordField name="retypePassword" label="Retype Password" form={form}/>
 
                 <Button disabled={isSubmitting} type="submit" variant="contained" color="primary" className={classes.submit} fullWidth size="large">
-                    Create An Account
+                    Sign in
                 </Button>
             </form>
         </div>
@@ -112,4 +96,4 @@ function RegisterForm(props) {
     );
 }
 
-export default RegisterForm;
+export default LoginForm;
